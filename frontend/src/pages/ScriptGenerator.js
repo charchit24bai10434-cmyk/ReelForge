@@ -246,7 +246,24 @@ export default function ScriptGenerator({ prefilledTopic, onTopicConsumed }) {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+const exportTxt = () => {
+  if (!result) return;
+  const formatted = [
+    result.hook     && `HOOK:\n${result.hook}`,
+    result.script   && `\nSCRIPT:\n${result.script}`,
+    result.cta      && `\nCTA:\n${result.cta}`,
+    result.caption  && `\nCAPTION:\n${result.caption}`,
+    result.hashtags && `\nHASHTAGS:\n${result.hashtags}`,
+  ].filter(Boolean).join("\n");
 
+  const blob = new Blob([formatted], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `reelforge-script-${Date.now()}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
   const resetAll = () => {
     setResult(null); setTopic(""); setTone(""); setDuration("30");
     setLanguage("English"); setPlatform("Instagram Reels");
@@ -418,12 +435,17 @@ export default function ScriptGenerator({ prefilledTopic, onTopicConsumed }) {
       {/* RESULT */}
       {result && (
         <div className="card">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-            <div className="card-title">your script is ready 🔥</div>
-            <button className={`btn-outline ${copied ? "copied-btn" : ""}`} onClick={copyAll}>
-              {copied ? "✓ copied!" : "copy all"}
-            </button>
-          </div>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+  <div className="card-title">your script is ready 🔥</div>
+  <div style={{ display: "flex", gap: "8px", marginLeft: "auto" }}>
+    <button className={`btn-outline ${copied ? "copied-btn" : ""}`} onClick={copyAll}>
+      {copied ? "✓ copied!" : "copy all"}
+    </button>
+    <button className="btn-outline" onClick={exportTxt}>
+      ⬇️ .txt
+    </button>
+  </div>
+</div>
 
           {scriptReadTime && (
             <div style={{ fontSize: "12px", color: "#555", marginBottom: "14px", padding: "6px 12px", background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "8px", display: "inline-flex", alignItems: "center", gap: "10px" }}>
