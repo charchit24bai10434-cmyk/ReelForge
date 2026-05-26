@@ -9,6 +9,7 @@ export default function IdeaGenerator({ prefilledIdea }) {
   const [expanding, setExpanding] = useState(false);
   const [detail, setDetail] = useState({});
   const [error, setError] = useState("");
+  const [copied, setCopied] = useState(null);
 
   React.useEffect(() => {
     if (prefilledIdea) setInput(prefilledIdea);
@@ -51,6 +52,12 @@ export default function IdeaGenerator({ prefilledIdea }) {
       setDetail(prev => ({ ...prev, [index]: "Could not expand — try again." }));
     }
     setExpanding(false);
+  };
+
+  const copyIdea = (text, index) => {
+    navigator.clipboard.writeText(text);
+    setCopied(index);
+    setTimeout(() => setCopied(null), 2000);
   };
 
   return (
@@ -127,11 +134,17 @@ export default function IdeaGenerator({ prefilledIdea }) {
                   ) : (
                     <div>
                       <div style={{ fontSize: "13px", color: "#aaa", lineHeight: "1.8", whiteSpace: "pre-wrap", marginBottom: "14px" }}>{detail[i]}</div>
-                      <button className="btn" onClick={() => {
-                        window.dispatchEvent(new CustomEvent('useIdea', { detail: idea.title }));
-                      }} style={{ fontSize: "12px", padding: "8px 16px" }}>
-                        use this idea in script generator
-                      </button>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button className="btn" onClick={() => copyIdea(detail[i], i)}
+                          style={{ fontSize: "12px", padding: "8px 16px", background: "transparent", border: "1px solid #333", color: copied === i ? "#22c55e" : "#aaa" }}>
+                          {copied === i ? "✓ copied!" : "copy idea"}
+                        </button>
+                        <button className="btn" onClick={() => {
+                          window.dispatchEvent(new CustomEvent('useIdea', { detail: idea.title }));
+                        }} style={{ fontSize: "12px", padding: "8px 16px" }}>
+                          use this idea in script generator
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>

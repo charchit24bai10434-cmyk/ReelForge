@@ -1,9 +1,11 @@
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask import Blueprint, request, jsonify
 from ai.clarifier import get_clarification
 from ai.writer import generate_script, regenerate_script
 
 generate_bp = Blueprint("generate", __name__)
-
+limiter = Limiter(get_remote_address)
 VALID_TONES = {"cinematic", "funny", "raw", "educational", "energetic", "emotional", "chill", "inspirational"}
 VALID_DURATIONS = {"15", "30", "60", "90"}
 VALID_PLATFORMS = {"Instagram Reels", "TikTok", "YouTube Shorts", "LinkedIn"}
@@ -39,6 +41,7 @@ def validate_generate_input(d):
 
 
 @generate_bp.route('/generate', methods=['POST'])
+@limiter.limit("5 per minute")
 def generate():
     try:
         d = request.json or {}
@@ -108,6 +111,7 @@ def generate():
 
 
 @generate_bp.route('/regenerate', methods=['POST'])
+@limiter.limit("5 per minute")
 def regenerate():
     try:
         d = request.json or {}

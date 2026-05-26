@@ -16,8 +16,9 @@ client = OpenAI(
     timeout=60.0
 )
 
-FAST_MODEL = "mistralai/mistral-7b-instruct-v0.3"
-SMART_MODEL = "mistralai/mistral-7b-instruct-v0.3"
+FAST_MODEL = "meta/llama-3.1-8b-instruct"
+SMART_MODEL = "meta/llama-3.1-8b-instruct"
+FALLBACK_MODEL = "mistralai/mistral-7b-instruct-v0.3"
 
 MAX_RETRIES = 3
 RETRY_DELAY = 1.0
@@ -32,6 +33,7 @@ def ask_ai(
     json_mode=False
 ):
     model = SMART_MODEL if smart else FAST_MODEL
+    fallback_used = False
 
     actual_prompt = prompt
     if json_mode:
@@ -79,6 +81,11 @@ def ask_ai(
             logger.error(f"Attempt {attempt}: status {e.status_code}: {e.message}")
             if e.status_code in (401, 403):
                 raise RuntimeError(last_error)
+            if not fallback_used:
+                logger.warning("Switching to fallback model...")
+                model = FALLBACK_MODEL
+                kwargs["model"] = FALLBACK_MODEL
+                fallback_used = True
         except RuntimeError:
             raise
         except Exception as e:
