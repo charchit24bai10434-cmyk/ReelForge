@@ -17,7 +17,7 @@ client = OpenAI(
 )
 
 FAST_MODEL = "mistralai/mistral-7b-instruct-v0.3"
-SMART_MODEL = "mistralai/mistral-7b-instruct-v0.3"
+SMART_MODEL = "mistralai/mixtral-8x7b-instruct-v0.1"
 
 MAX_RETRIES = 3
 RETRY_DELAY = 1.0
@@ -91,56 +91,56 @@ def ask_ai(
     raise RuntimeError(last_error or "AI call failed after 3 attempts. Please try again.")
 
 
-def _aggressive_json_fix(text):
+def _clean_json_string(content):
+    """
+    Fix common issues with model-generated JSON:
+    1. Literal newlines inside string values (invalid JSON)
+    2. Unescaped control characters
+    """
+    # Find the JSON object boundaries
     try:
-        start = text.index("{")
-        depth = 0
-        end = start
-        for i, ch in enumerate(text[start:], start):
-            if ch == "{": depth += 1
-            elif ch == "}":
-                depth -= 1
-                if depth == 0:
-                    end = i
-                    break
-        text = text[start:end + 1]
+        start = content.index("{")
+        end = content.rindex("}") + 1
+        raw = content[start:end]
     except ValueError:
-        return text
+        return content
 
-    # Fix literal newlines inside strings
+    # Strategy: parse character by character
+    # Replace literal newlines inside string values with \n
     result = []
     in_string = False
-    i = 0
-    while i < len(text):
-        ch = text[i]
-        if ch == '\\' and i + 1 < len(text):
-            result.append(ch)
-            result.append(text[i + 1])
-            i += 2
+    escape_next = False
+
+    for char in raw:
+        if escape_next:
+            result.append(char)
+            escape_next = False
             continue
-        if ch == '"':
+
+        if char == "\\":
+            result.append(char)
+            escape_next = True
+            continue
+
+        if char == '"' and not escape_next:
             in_string = not in_string
-            result.append(ch)
-            i += 1
+            result.append(char)
             continue
+
+        # Inside a string — replace literal newlines/tabs with escaped versions
         if in_string:
-            if ch == '\n': result.append('\\n')
-            elif ch == '\r': result.append('\\r')
-            elif ch == '\t': result.append('\\t')
-            else: result.append(ch)
+            if char == "\n":
+                result.append("\\n")
+            elif char == "\r":
+                result.append("\\r")
+            elif char == "\t":
+                result.append("\\t")
+            else:
+                result.append(char)
         else:
-            result.append(ch)
-        i += 1
-    text = "".join(result)
+            result.append(char)
 
-    # Fix single quotes → double quotes
-    text = re.sub(r"'([^']*)'(\s*:)", r'"\1"\2', text)
-    text = re.sub(r"(:\s*)'([^']*)'", r'\1"\2"', text)
-
-    # Remove trailing commas
-    text = re.sub(r',\s*([}\]])', r'\1', text)
-
-    return text
+    return "".join(result)
 
 
 def _extract_json(content):
@@ -160,13 +160,23 @@ def _extract_json(content):
         except json.JSONDecodeError:
             pass
 
-    # Attempt 3: aggressive fix then parse
+    # Attempt 3: find outermost { ... } and try direct parse
     try:
-        fixed = _aggressive_json_fix(content)
-        return json.loads(fixed)
-    except (ValueError, json.JSONDecodeError) as e:
-        logger.warning(f"JSON extraction failed. Raw (first 400): {content[:400]}. Error: {e}")
+        start = content.index("{")
+        end = content.rindex("}") + 1
+        extracted = content[start:end]
+        return json.loads(extracted)
+    except (ValueError, json.JSONDecodeError):
+        pass
 
+    # Attempt 4: FIX — clean literal newlines inside strings then parse
+    try:
+        cleaned = _clean_json_string(content)
+        return json.loads(cleaned)
+    except (ValueError, json.JSONDecodeError) as e:
+        logger.warning(f"JSON extraction failed after cleaning. Raw (first 400): {content[:400]}. Error: {e}")
+
+    # Last resort fallback
     logger.error("All JSON extraction failed — raw content fallback")
     return {
         "hook": "",

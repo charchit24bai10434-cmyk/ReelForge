@@ -50,7 +50,7 @@ export default function HookAnalyzer() {
   return (
     <div>
       <div className="page-header">
-        <div className="page-title">Is your HOOK <span>Fire or Mid?</span> 🔥</div>
+        <div className="page-title">is your hook <span>fire or mid?</span> 🔥</div>
         <div className="page-sub">paste your hook and AI will rate it, roast it, and rewrite it better</div>
       </div>
 

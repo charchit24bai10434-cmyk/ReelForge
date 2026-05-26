@@ -43,7 +43,7 @@ export default function Translator() {
   return (
     <div>
       <div className="page-header">
-        <div className="page-title">Go <span>GLOBAL</span> with your CONTENT 🌍</div>
+        <div className="page-title">go <span>global</span> with your content 🌍</div>
         <div className="page-sub">translate your script to any language while keeping the viral energy intact</div>
       </div>
 

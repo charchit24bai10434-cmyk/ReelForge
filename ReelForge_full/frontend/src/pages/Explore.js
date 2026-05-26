@@ -48,7 +48,7 @@ export default function Explore() {
   return (
     <div>
       <div className="page-header">
-        <div className="page-title">Explore what is <span>going VIRAL</span></div>
+        <div className="page-title">explore what is <span>going viral</span></div>
         <div className="page-sub">get inspired by viral reels — make your own version in one click</div>
       </div>
 

@@ -67,7 +67,7 @@ export default function Dashboard({ displayName = "Creator" }) {
     <div>
       <div className="page-header">
         <div className="page-title">
-          Hey {firstName}, <span>let us COOK</span>
+          hey {firstName}, <span>let us cook</span>
         </div>
         <div className="page-sub">
           your creator studio has 7 tools ready to make you go viral

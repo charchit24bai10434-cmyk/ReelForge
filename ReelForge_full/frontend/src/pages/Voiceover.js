@@ -35,7 +35,7 @@ export default function Voiceover() {
   return (
     <div>
       <div className="page-header">
-        <div className="page-title">Give your script <span>a voice</span></div>
+        <div className="page-title">give your script <span>a voice</span></div>
         <div className="page-sub">pick a voice, paste your script, preview it instantly — free!</div>
       </div>
       <div className="card">

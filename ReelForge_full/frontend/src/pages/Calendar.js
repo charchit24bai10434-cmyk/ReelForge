@@ -159,7 +159,7 @@ export default function Calendar() {
 
       {/* Header */}
       <div className="page-header">
-        <div className="page-title">Your 30-Day <span>content challenge</span></div>
+        <div className="page-title">your 30-day <span>content challenge</span></div>
         <div className="page-sub">generate your plan, track your progress, build your streak</div>
       </div>
 

@@ -56,7 +56,7 @@ export default function IdeaGenerator({ prefilledIdea }) {
   return (
     <div>
       <div className="page-header">
-        <div className="page-title">What do you <span>want to make?</span></div>
+        <div className="page-title">what do you <span>want to make?</span></div>
         <div className="page-sub">describe your idea in your own words — AI will turn it into viral content ideas</div>
       </div>
 

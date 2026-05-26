@@ -65,7 +65,7 @@ export default function HashtagTool() {
   return (
     <div>
       <div className="page-header">
-        <div className="page-title">#️⃣ Hashtags that <span>actually work</span></div>
+        <div className="page-title">hashtags that <span>actually work</span> #️⃣</div>
         <div className="page-sub">get hashtags sorted by reach — mega, macro, micro and niche</div>
       </div>
 
