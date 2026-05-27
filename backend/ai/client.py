@@ -16,9 +16,15 @@ client = OpenAI(
     timeout=60.0
 )
 
-FAST_MODEL = "meta/llama-3.1-8b-instruct"
-SMART_MODEL = "meta/llama-3.1-8b-instruct"
-FALLBACK_MODEL = "mistralai/mistral-7b-instruct-v0.3"
+FAST_MODEL = "mistralai/mistral-7b-instruct-v0.3"
+SMART_MODEL = "mistralai/mistral-7b-instruct-v0.3"
+
+# Fallback models if primary is degraded
+FALLBACK_MODELS = [
+    "mistralai/mistral-7b-instruct-v0.3",
+    "meta/llama-3.1-8b-instruct",
+    "microsoft/phi-3-mini-128k-instruct",
+]
 
 MAX_RETRIES = 3
 RETRY_DELAY = 1.0
@@ -33,6 +39,7 @@ def ask_ai(
     json_mode=False
 ):
     model = SMART_MODEL if smart else FAST_MODEL
+    models_to_try = [model] + [m for m in FALLBACK_MODELS if m != model]
     fallback_used = False
 
     actual_prompt = prompt
@@ -53,8 +60,11 @@ def ask_ai(
     last_error = None
 
     for attempt in range(1, MAX_RETRIES + 1):
+        # Try different model if previous attempt failed with 400
+        current_model = models_to_try[min(attempt - 1, len(models_to_try) - 1)]
+        kwargs["model"] = current_model
         try:
-            logger.info(f"AI call attempt {attempt}/{MAX_RETRIES} — model: {model}")
+            logger.info(f"AI call attempt {attempt}/{MAX_RETRIES} — model: {current_model}")
             completion = client.chat.completions.create(**kwargs)
             content = completion.choices[0].message.content
 
@@ -78,13 +88,12 @@ def ask_ai(
             logger.error(f"Attempt {attempt}: connection error: {e}")
         except APIStatusError as e:
             last_error = f"AI service error ({e.status_code}). Try again shortly."
-            logger.error(f"Attempt {attempt}: status {e.status_code}: {e.message}")
+            logger.error(f"Attempt {attempt}: status {e.status_code}: {e}")
             if e.status_code in (401, 403):
                 raise RuntimeError(last_error)
+            # mark that we've attempted a fallback model; next loop iteration will pick the next model from models_to_try
             if not fallback_used:
                 logger.warning("Switching to fallback model...")
-                model = FALLBACK_MODEL
-                kwargs["model"] = FALLBACK_MODEL
                 fallback_used = True
         except RuntimeError:
             raise
