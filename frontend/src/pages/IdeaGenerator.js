@@ -133,7 +133,9 @@ export default function IdeaGenerator({ prefilledIdea }) {
                     <div className="loading"><i className="ti ti-loader"></i> expanding this idea...</div>
                   ) : (
                     <div>
-                      <div style={{ fontSize: "13px", color: "#aaa", lineHeight: "1.8", whiteSpace: "pre-wrap", marginBottom: "14px" }}>{detail[i]}</div>
+                      <div style={{ fontSize: "13px", color: "#aaa", lineHeight: "1.8", whiteSpace: "pre-wrap", marginBottom: "14p x" }}>
+                           {detail[i]?.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1')}
+</div>
                       <div style={{ display: "flex", gap: "8px" }}>
                         <button className="btn" onClick={() => copyIdea(detail[i], i)}
                           style={{ fontSize: "12px", padding: "8px 16px", background: "transparent", border: "1px solid #333", color: copied === i ? "#22c55e" : "#aaa" }}>
