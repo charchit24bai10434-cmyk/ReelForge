@@ -18,7 +18,6 @@ client = OpenAI(
 FAST_MODEL = "gpt-4o-mini"
 SMART_MODEL = "gpt-4o"
 
-# Fallback models if primary is degraded
 FALLBACK_MODELS = [
     "gpt-4o-mini",
     "gpt-3.5-turbo",
@@ -26,7 +25,6 @@ FALLBACK_MODELS = [
 
 MAX_RETRIES = 3
 RETRY_DELAY = 1.0
-
 
 def ask_ai(
     prompt,
