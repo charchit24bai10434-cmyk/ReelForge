@@ -32,6 +32,7 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [displayName, setDisplayName] = useState("Charchit");
   const [tempName, setTempName] = useState("Charchit");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     const useIdeaHandler = (e) => {
@@ -111,11 +112,16 @@ function App() {
     setShowSettings(false);
   };
 
+  const navigateTo = (id) => {
+    setActive(id);
+    setSidebarOpen(false); // close sidebar on mobile after navigation
+  };
+
   const pages = {
     script: (
       <ScriptGenerator
         prefilledTopic={prefilledTopic}
-        onTopicConsumed={() => setPrefilledTopic("")}  // FIX: clear after use
+        onTopicConsumed={() => setPrefilledTopic("")}
       />
     ),
     idea: <IdeaGenerator prefilledIdea={prefilledTopic} />,
@@ -125,14 +131,21 @@ function App() {
     hashtag: <HashtagTool />,
     translator: <Translator />,
     explore: <Explore prefilledIdea={prefilledTopic} />,
-    dashboard: <Dashboard displayName={displayName} />,  // FIX: pass dynamic name
+    dashboard: <Dashboard displayName={displayName} />,
   };
 
   const sections = ["Create", "Grow", "You"];
 
   return (
     <div className="app bg-black min-h-screen text-white">
-      <div className="sidebar">
+
+      {/* Mobile overlay behind sidebar */}
+      <div
+        className={"sidebar-overlay" + (sidebarOpen ? " visible" : "")}
+        onClick={() => setSidebarOpen(false)}
+      />
+
+      <div className={"sidebar" + (sidebarOpen ? " open" : "")}>
         <div className="logo">
           <div className="logo-text">ReelForge</div>
           <div className="logo-sub">AI Creator Studio</div>
@@ -147,7 +160,7 @@ function App() {
                 <div
                   key={item.id}
                   className={"nav-item" + (active === item.id ? " active" : "")}
-                  onClick={() => setActive(item.id)}
+                  onClick={() => navigateTo(item.id)}
                 >
                   <i className={"ti " + item.icon}></i>
                   <span>{item.label}</span>
@@ -159,6 +172,18 @@ function App() {
 
       <div className="main-shell">
         <div className="topbar">
+
+          {/* Hamburger — only visible on mobile via CSS */}
+          <button
+            className="hamburger-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSidebarOpen(!sidebarOpen);
+            }}
+          >
+            <i className={"ti " + (sidebarOpen ? "ti-x" : "ti-menu-2")} style={{ fontSize: "20px" }}></i>
+          </button>
+
           <div className="search-box">
             <i className="ti ti-search"></i>
             <input
@@ -258,10 +283,10 @@ function App() {
                   borderRadius: "14px", padding: "10px",
                   minWidth: "220px", zIndex: 9999
                 }}>
-                  <div style={{ padding: "12px", cursor: "pointer", color: "#fff" }} onClick={() => setActive("dashboard")}>
+                  <div style={{ padding: "12px", cursor: "pointer", color: "#fff" }} onClick={() => { setActive("dashboard"); setShowProfileMenu(false); }}>
                     📊 My Dashboard
                   </div>
-                  <div style={{ padding: "12px", cursor: "pointer", color: "#fff" }} onClick={() => setActive("explore")}>
+                  <div style={{ padding: "12px", cursor: "pointer", color: "#fff" }} onClick={() => { setActive("explore"); setShowProfileMenu(false); }}>
                     🧭 Explore
                   </div>
                   <div
@@ -284,11 +309,12 @@ function App() {
       {showSettings && (
         <div style={{
           position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)",
-          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10000
+          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10000,
+          padding: "20px"
         }}>
           <div style={{
             background: "#111", border: "1px solid #222",
-            borderRadius: "18px", padding: "24px", width: "420px"
+            borderRadius: "18px", padding: "24px", width: "100%", maxWidth: "420px"
           }}>
             <h2 style={{ color: "#fff", marginBottom: "20px" }}>Settings</h2>
 
