@@ -16,10 +16,11 @@ client = OpenAI(
     timeout=60.0
 )
 
-FAST_MODEL = "gpt-4o-mini"
-SMART_MODEL = "gpt-4o-mini"
+FAST_MODEL = "gpt-5.4-mini"
+SMART_MODEL = "gpt-5.4"
 FALLBACK_MODELS = [
-    "gpt-4o-mini",
+    "gpt-5.4-mini",
+    "deepseek-v3.2",
 ]
 
 MAX_RETRIES = 3
