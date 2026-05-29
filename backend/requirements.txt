@@ -5,3 +5,4 @@ openai>=1.30.0
 gunicorn
 flask-limiter
 flask-limiter
+groq
