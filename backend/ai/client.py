@@ -11,19 +11,17 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 client = OpenAI(
-    base_url="https://integrate.api.nvidia.com/v1",
-    api_key=os.getenv("NVIDIA_API_KEY"),
+    api_key=os.getenv("OPENAI_API_KEY"),
     timeout=60.0
 )
 
-FAST_MODEL = "mistralai/mistral-7b-instruct-v0.3"
-SMART_MODEL = "mistralai/mistral-7b-instruct-v0.3"
+FAST_MODEL = "gpt-4o-mini"
+SMART_MODEL = "gpt-4o"
 
 # Fallback models if primary is degraded
 FALLBACK_MODELS = [
-    "mistralai/mistral-7b-instruct-v0.3",
-    "meta/llama-3.1-8b-instruct",
-    "microsoft/phi-3-mini-128k-instruct",
+    "gpt-4o-mini",
+    "gpt-3.5-turbo",
 ]
 
 MAX_RETRIES = 3
