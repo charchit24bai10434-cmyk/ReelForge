@@ -3,23 +3,23 @@ import json
 import re
 import time
 import logging
-from openai import OpenAI, APITimeoutError, APIConnectionError, APIStatusError
+from groq import Groq
 from dotenv import load_dotenv
 
 load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-client = OpenAI(
-    base_url="https://api.g0i.ai/v1",
-    api_key=os.getenv("G0I_API_KEY"),
-    timeout=60.0
+client = Groq(
+    api_key=os.getenv("GROQ_API_KEY"),
 )
 
-FAST_MODEL = "deepseek-v3.2"
-SMART_MODEL = "deepseek-v3.2"
+FAST_MODEL = "llama-3.3-70b-versatile"
+SMART_MODEL = "llama-3.3-70b-versatile"
+
 FALLBACK_MODELS = [
-    "deepseek-v3.2",
+    "llama-3.3-70b-versatile",
+    "llama-3.1-8b-instant",
 ]
 
 MAX_RETRIES = 3
