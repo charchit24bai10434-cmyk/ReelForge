@@ -16,10 +16,9 @@ client = OpenAI(
     timeout=60.0
 )
 
-FAST_MODEL = "gpt-5.4-mini"
-SMART_MODEL = "gpt-5.4"
+FAST_MODEL = "deepseek-v3.2"
+SMART_MODEL = "deepseek-v3.2"
 FALLBACK_MODELS = [
-    "gpt-5.4-mini",
     "deepseek-v3.2",
 ]
 
@@ -31,7 +30,7 @@ def ask_ai(
     system_role,
     smart=False,
     temperature=0.7,
-    max_tokens=1200,
+    max_tokens=500,
     json_mode=False
 ):
     model = SMART_MODEL if smart else FAST_MODEL
