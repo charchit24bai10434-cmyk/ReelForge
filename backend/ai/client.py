@@ -16,11 +16,10 @@ client = OpenAI(
     timeout=60.0
 )
 
-FAST_MODEL = "qwen3-coder-80b"
-SMART_MODEL = "qwen3-coder-80b"
-
+FAST_MODEL = "gpt-4o-mini"
+SMART_MODEL = "gpt-4o-mini"
 FALLBACK_MODELS = [
-    "qwen3-coder-80b",
+    "gpt-4o-mini",
 ]
 
 MAX_RETRIES = 3
