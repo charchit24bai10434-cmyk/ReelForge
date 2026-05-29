@@ -11,16 +11,16 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY"),
+    base_url="https://api.g0i.ai/v1",
+    api_key=os.getenv("G0I_API_KEY"),
     timeout=60.0
 )
 
-FAST_MODEL = "gpt-4o-mini"
-SMART_MODEL = "gpt-4o"
+FAST_MODEL = "qwen3-coder-80b"
+SMART_MODEL = "qwen3-coder-80b"
 
 FALLBACK_MODELS = [
-    "gpt-4o-mini",
-    "gpt-3.5-turbo",
+    "qwen3-coder-80b",
 ]
 
 MAX_RETRIES = 3
