@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
+import { supabase } from "./supabase";
+import Login from "./pages/Login";
 import ScriptGenerator from "./pages/ScriptGenerator";
 import IdeaGenerator from "./pages/IdeaGenerator";
 import HookAnalyzer from "./pages/HookAnalyzer";
@@ -33,6 +35,21 @@ function App() {
   const [displayName, setDisplayName] = useState("Charchit");
   const [tempName, setTempName] = useState("Charchit");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setAuthLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     const useIdeaHandler = (e) => {
@@ -61,6 +78,11 @@ function App() {
       document.removeEventListener("click", closeMenus);
     };
   }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setShowProfileMenu(false);
+  };
 
   const handleSearch = () => {
     const q = searchQuery.trim().toLowerCase();
@@ -114,7 +136,7 @@ function App() {
 
   const navigateTo = (id) => {
     setActive(id);
-    setSidebarOpen(false); // close sidebar on mobile after navigation
+    setSidebarOpen(false);
   };
 
   const pages = {
@@ -136,10 +158,20 @@ function App() {
 
   const sections = ["Create", "Grow", "You"];
 
+  if (authLoading) return (
+    <div style={{
+      minHeight: '100vh', background: '#080808',
+      display: 'flex', alignItems: 'center', justifyContent: 'center'
+    }}>
+      <div className="loader"></div>
+    </div>
+  );
+
+  if (!user) return <Login />;
+
   return (
     <div className="app bg-black min-h-screen text-white">
 
-      {/* Mobile overlay behind sidebar */}
       <div
         className={"sidebar-overlay" + (sidebarOpen ? " visible" : "")}
         onClick={() => setSidebarOpen(false)}
@@ -173,7 +205,6 @@ function App() {
       <div className="main-shell">
         <div className="topbar">
 
-          {/* Hamburger — only visible on mobile via CSS */}
           <button
             className="hamburger-btn"
             onClick={(e) => {
@@ -283,17 +314,24 @@ function App() {
                   borderRadius: "14px", padding: "10px",
                   minWidth: "220px", zIndex: 9999
                 }}>
-                  <div style={{ padding: "12px", cursor: "pointer", color: "#fff" }} onClick={() => { setActive("dashboard"); setShowProfileMenu(false); }}>
+                  <div style={{ padding: "12px", color: "#666", fontSize: "12px" }}>
+                    {user.email}
+                  </div>
+                  <div style={{ padding: "12px", cursor: "pointer", color: "#fff" }}
+                    onClick={() => { setActive("dashboard"); setShowProfileMenu(false); }}>
                     📊 My Dashboard
                   </div>
-                  <div style={{ padding: "12px", cursor: "pointer", color: "#fff" }} onClick={() => { setActive("explore"); setShowProfileMenu(false); }}>
+                  <div style={{ padding: "12px", cursor: "pointer", color: "#fff" }}
+                    onClick={() => { setActive("explore"); setShowProfileMenu(false); }}>
                     🧭 Explore
                   </div>
-                  <div
-                    style={{ padding: "12px", cursor: "pointer", color: "#fff" }}
-                    onClick={() => { setShowProfileMenu(false); setShowSettings(true); }}
-                  >
+                  <div style={{ padding: "12px", cursor: "pointer", color: "#fff" }}
+                    onClick={() => { setShowProfileMenu(false); setShowSettings(true); }}>
                     ⚙️ Settings
+                  </div>
+                  <div style={{ padding: "12px", cursor: "pointer", color: "#ff6b6b" }}
+                    onClick={handleLogout}>
+                    🚪 Logout
                   </div>
                 </div>
               )}
@@ -335,23 +373,20 @@ function App() {
               API Status: <span style={{ color: "#4ade80" }}>● Connected</span>
             </div>
 
-            <button className="btn" style={{ width: "100%", marginBottom: "10px" }} onClick={() => setSearchQuery("")}>
+            <button className="btn" style={{ width: "100%", marginBottom: "10px" }}
+              onClick={() => setSearchQuery("")}>
               Clear Search
             </button>
-            <button className="btn" style={{ width: "100%", marginBottom: "10px" }} onClick={resetApp}>
+            <button className="btn" style={{ width: "100%", marginBottom: "10px" }}
+              onClick={resetApp}>
               Reset App State
             </button>
-            <button
-              className="btn"
-              style={{ width: "100%", marginBottom: "10px" }}
-              onClick={() => {
-                setDisplayName(tempName || "Creator");
-                setShowSettings(false);
-              }}
-            >
+            <button className="btn" style={{ width: "100%", marginBottom: "10px" }}
+              onClick={() => { setDisplayName(tempName || "Creator"); setShowSettings(false); }}>
               Save Settings
             </button>
-            <button className="btn-outline" style={{ width: "100%" }} onClick={() => setShowSettings(false)}>
+            <button className="btn-outline" style={{ width: "100%" }}
+              onClick={() => setShowSettings(false)}>
               Close
             </button>
           </div>
