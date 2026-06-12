@@ -24,6 +24,21 @@ const navItems = [
   { id: "dashboard", label: "My Dashboard", icon: "ti-layout-dashboard", section: "You" },
 ];
 
+// Items shown in the mobile bottom navigation bar
+const bottomNavItems = [
+  { id: "idea", label: "Home", icon: "ti-home" },
+  { id: "script", label: "Create", icon: "ti-sparkles" },
+  { id: "grow", label: "Grow", icon: "ti-chart-line" },
+  { id: "dashboard", label: "Profile", icon: "ti-user" },
+];
+
+// Sub-options shown when "Grow" is tapped on mobile
+const growMenuItems = [
+  { id: "calendar", label: "30-Day Calendar", icon: "ti-calendar" },
+  { id: "hashtag", label: "Hashtag Research", icon: "ti-hash" },
+  { id: "translator", label: "Script Translator", icon: "ti-language" },
+];
+
 function App() {
   const [active, setActive] = useState("idea");
   const [prefilledTopic, setPrefilledTopic] = useState("");
@@ -32,6 +47,7 @@ function App() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showGrowMenu, setShowGrowMenu] = useState(false);
   const [displayName, setDisplayName] = useState("Charchit");
   const [tempName, setTempName] = useState("Charchit");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -66,6 +82,7 @@ function App() {
       setShowQuickActions(false);
       setShowNotifications(false);
       setShowProfileMenu(false);
+      setShowGrowMenu(false);
     };
 
     window.addEventListener("useIdea", useIdeaHandler);
@@ -78,6 +95,45 @@ function App() {
       document.removeEventListener("click", closeMenus);
     };
   }, []);
+
+  // Scroll fade-in animation: applies to common card/section elements
+  // rendered inside .main, without touching any individual page file.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const selectors = [
+        ".tool-card",
+        ".stat-card",
+        ".idea-card",
+        ".voice-option",
+        ".result-box",
+        ".hashtag-pill",
+      ];
+      const els = document.querySelectorAll(
+        selectors.map((s) => ".main " + s).join(", ")
+      );
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("in-view");
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.1, rootMargin: "0px 0px -40px 0px" }
+      );
+
+      els.forEach((el) => {
+        el.classList.add("scroll-fade");
+        observer.observe(el);
+      });
+
+      return () => observer.disconnect();
+    }, 80);
+
+    return () => clearTimeout(timer);
+  }, [active]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -132,12 +188,16 @@ function App() {
     setShowNotifications(false);
     setShowProfileMenu(false);
     setShowSettings(false);
+    setShowGrowMenu(false);
   };
 
   const navigateTo = (id) => {
     setActive(id);
     setSidebarOpen(false);
+    setShowGrowMenu(false);
   };
+
+  const isGrowActive = ["calendar", "hashtag", "translator"].includes(active);
 
   const pages = {
     script: (
@@ -340,8 +400,52 @@ function App() {
         </div>
 
         <div className="main">
-          {pages[active]}
+          <div key={active} className="page-fade">
+            {pages[active]}
+          </div>
         </div>
+      </div>
+
+      {/* ===== MOBILE BOTTOM NAVIGATION ===== */}
+      <div className="bottom-nav">
+        {bottomNavItems.map((item) => {
+          const isGrow = item.id === "grow";
+          const isActive = isGrow ? isGrowActive : active === item.id;
+          return (
+            <div
+              key={item.id}
+              className={"bottom-nav-item" + (isActive ? " active" : "")}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isGrow) {
+                  setShowGrowMenu((prev) => !prev);
+                } else {
+                  navigateTo(item.id);
+                }
+              }}
+            >
+              <i className={"ti " + item.icon}></i>
+              <span>{item.label}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* "Grow" sub-menu (Calendar / Hashtags / Translator) */}
+      <div
+        className={"grow-menu" + (showGrowMenu ? " open" : "")}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {growMenuItems.map((item) => (
+          <div
+            key={item.id}
+            className={"grow-menu-item" + (active === item.id ? " active" : "")}
+            onClick={() => navigateTo(item.id)}
+          >
+            <i className={"ti " + item.icon}></i>
+            <span>{item.label}</span>
+          </div>
+        ))}
       </div>
 
       {showSettings && (
