@@ -48,20 +48,46 @@ function App() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showGrowMenu, setShowGrowMenu] = useState(false);
-  const [displayName, setDisplayName] = useState("Charchit");
-  const [tempName, setTempName] = useState("Charchit");
+  const [displayName, setDisplayName] = useState("");
+  const [tempName, setTempName] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
 
+  // Work out a sensible display name for whoever is actually logged in.
+  // Priority: a name they've previously set in Settings (saved per-account),
+  // then their account's full name/metadata, then the part of their email
+  // before the @ sign, then a generic fallback.
+  const resolveDisplayName = (loggedInUser) => {
+    if (!loggedInUser) return "Creator";
+
+    const saved = localStorage.getItem(`reelforge_displayname_${loggedInUser.id}`);
+    if (saved) return saved;
+
+    const meta = loggedInUser.user_metadata || {};
+    if (meta.full_name) return meta.full_name;
+    if (meta.name) return meta.name;
+    if (loggedInUser.email) return loggedInUser.email.split("@")[0];
+
+    return "Creator";
+  };
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+      const sessionUser = session?.user ?? null;
+      setUser(sessionUser);
+      const name = resolveDisplayName(sessionUser);
+      setDisplayName(name);
+      setTempName(name);
       setAuthLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      const sessionUser = session?.user ?? null;
+      setUser(sessionUser);
+      const name = resolveDisplayName(sessionUser);
+      setDisplayName(name);
+      setTempName(name);
     });
 
     return () => subscription.unsubscribe();
@@ -486,7 +512,14 @@ function App() {
               Reset App State
             </button>
             <button className="btn" style={{ width: "100%", marginBottom: "10px" }}
-              onClick={() => { setDisplayName(tempName || "Creator"); setShowSettings(false); }}>
+              onClick={() => {
+                const name = tempName.trim() || resolveDisplayName(user);
+                setDisplayName(name);
+                if (user) {
+                  localStorage.setItem(`reelforge_displayname_${user.id}`, name);
+                }
+                setShowSettings(false);
+              }}>
               Save Settings
             </button>
             <button className="btn-outline" style={{ width: "100%" }}
